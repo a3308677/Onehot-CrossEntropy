@@ -8,8 +8,6 @@ from unittest import TestCase
 from onehot import onehot, test1d
 
 
-
-
 class TestOnehot(TestCase):
     def test_onehot_1d(self):
         for _ in range(100):
