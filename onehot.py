@@ -1,9 +1,15 @@
+from __future__ import absolute_import, division
+
 import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
 from torch import nn
+
 import numpy as np
 
+from crossentropy import OnehotCrossEntropyLoss
+
+onehot_cross_entropy = OnehotCrossEntropyLoss()
 
 
 # Test passed
@@ -51,6 +57,8 @@ def check1d(oneVec, oneHot):
         True/False
     """
     batchSz = oneHot.size(0)
+    data1 = torch.ones(batchSz).long()
+    data2 = oneHot.sum(dim=1)
     assert oneHot.sum(dim=1).equal(torch.ones(batchSz).long()), "not all dimensions sum to 1"
     for _ in range(batchSz):
         index = oneVec[_, 0]
@@ -70,6 +78,22 @@ def test1d(batchRange=[1, 50000], classRange=[1, 100], testTimes=10000):
         oneVec = torch.LongTensor(batchSz, 1).random_(nClasses)
         oneHot = make_onehot(oneVec, nClasses)
         print("Testing [%d/%d] -- batchSize : %d\tnClasses : %d\tresult: %s" % (_, testTimes, batchSz, nClasses, check1d(oneVec, oneHot)))
+
+
+
+def checkOnehotCE(input, target):
+    """
+    :param input: NxC softmax out
+    :param target: Nx1 ground truth label
+    :return: 
+    """
+    normalCE = F.cross_entropy(input, target)
+
+    nClasses = input.size(1)
+    onehotTarget = onehot(target, nClasses)
+    onehotCE = onehot_cross_entropy(input, onehotTarget)
+
+    assert onehotCE.data.equal(normalCE.data), "onehot CE is not equal to normal CE, check fail"
 
 
 if __name__ == "__main__":
