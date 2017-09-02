@@ -5,12 +5,16 @@ from torch import nn
 import numpy as np
 
 
-def onehot(input, n_classes):
+
+# Test passed
+def make_onehot(input, n_classes):
     """
     :param input: Nx1, where all numbers are from 0 ~ C-1
     :param n_classes: C
     :return:
     """
+    if input.dim() == 1:
+        input = input.view(-1, 1)
     batch_size = input.size(0)
     y_onehot = torch.LongTensor(batch_size, n_classes)
     y_onehot.zero_()
@@ -29,10 +33,12 @@ def onehot2d(input, batch_size, n_classes):
 
     # target: (NxHxW) x 1 -> (NxHxW) x N_class
     # expand to onehot form
-    onehot_target = onehot(onehot_input, batch_size=onehot_batch_size, n_classes=n_classes)
+    onehot_target = make_onehot(onehot_input, batch_size=onehot_batch_size, n_classes=n_classes)
 
     # target: (NxHxW) x N_class -> N x H x W x N_class -> N x N_class x W x H
-    onehot_target = onehot_target.view(input_shape[0], input_shape[1], input_shape[2], n_classes).transpose(3, 2).transpose(2, 1).contiguous()
+    onehot_target = onehot_target.view(input_shape[0], input_shape[1], input_shape[2], n_classes).transpose(3,
+                                                                                                            2).transpose(
+        2, 1).contiguous()
 
     return onehot_target
 
@@ -49,18 +55,22 @@ def check1d(oneVec, oneHot):
     for _ in range(batchSz):
         index = oneVec[_, 0]
         assert oneHot[_, index] == 1, "onehot mismatch!"
+    return True
 
-def test1d(batchRange=[1, 100], classRange=[1, 100]):
+
+def test1d(batchRange=[1, 50000], classRange=[1, 100], testTimes=10000):
     """
     :param batchRange:
     :param classRange:
     :return:
     """
-    batchSz = np.random.randint(batchRange[0], batchRange[1])
-    nClasses = np.random.randint(classRange[0], classRange[1])
-    oneVec = torch.LongTensor(batchSz, 1).random_(nClasses)
-    oneHot = onehot(oneVec, nClasses)
-    check1d(oneVec, oneHot)
+    for _ in range(testTimes):
+        batchSz = np.random.randint(batchRange[0], batchRange[1])
+        nClasses = np.random.randint(classRange[0], classRange[1])
+        oneVec = torch.LongTensor(batchSz, 1).random_(nClasses)
+        oneHot = make_onehot(oneVec, nClasses)
+        print("Testing [%d/%d] -- batchSize : %d\tnClasses : %d\tresult: %s" % (_, testTimes, batchSz, nClasses, check1d(oneVec, oneHot)))
+
 
 if __name__ == "__main__":
     test1d()
