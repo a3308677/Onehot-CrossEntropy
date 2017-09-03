@@ -62,7 +62,6 @@ def onehot_cross_entropy(input, target, weight=None, size_average=True, ignore_i
         # TODO: implement ignore index
         fixing = 100
 
-
     if size_average:
         nll /= nll.size(0)
 
@@ -71,6 +70,7 @@ def onehot_cross_entropy(input, target, weight=None, size_average=True, ignore_i
 
 if __name__ == "__main__":
     from onehot import make_onehot, check1d
+
     criterion1 = nn.CrossEntropyLoss()
     criterion2 = OnehotCrossEntropyLoss()
 
@@ -84,5 +84,6 @@ if __name__ == "__main__":
     random_target = Variable(random_target)
     random_onehot = Variable(random_onehot)
 
-    print(F.cross_entropy(random_input, random_target))
-    print(onehot_cross_entropy(random_input, random_onehot))
+    res1 = F.cross_entropy(random_input, random_target)
+    res2 = onehot_cross_entropy(random_input, random_onehot)
+    assert res1.data.equal(res2.data), "error"

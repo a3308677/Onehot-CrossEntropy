@@ -5,7 +5,7 @@ from torch import nn
 import numpy as np
 
 from unittest import TestCase
-from onehot import onehot, test1d
+from onehot import test1d
 
 
 class TestOnehot(TestCase):
